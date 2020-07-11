@@ -167,10 +167,6 @@ bool tubo::chocar(class pajaro pajarito) {
     return false;
 }
 
-int aleatorio() {
-   return rand() % 20 + 10;
-}
-
 int main()
 {
     eliminarCosito();
@@ -211,7 +207,7 @@ int main()
                 (*itTubos)->borrar();
                 delete(*itTubos);
                 itTubos = tubitos.erase(itTubos);
-                tubitos.push_back(new tubo(120, aleatorio(),15));
+                tubitos.push_back(new tubo(120, rand() % 20 + 15,15));
             }
         }
         if (contador==1)
