@@ -6,6 +6,14 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <list>
+#include <thread>
+#include <process.h>
+#include <future>
+#include "sonido.h"
+
+#include <Mmsystem.h>
+#include <mciapi.h>
+#pragma comment(lib, "Winmm.lib")
 
 using namespace std;
 
@@ -75,7 +83,6 @@ public:
     void borrar();
     void subir();
     void bajar();
-
 };
 void pajaro::dibujar() {
     gotoxy(x, y);     cout << "    __";
@@ -100,7 +107,6 @@ for (int i = 0; i < 5; i++)
             dibujar();
     }
         };
-    
 }
 void pajaro::bajar() {
     if (y<26)
@@ -109,7 +115,6 @@ void pajaro::bajar() {
         y++;
         dibujar();
     }
-    
 }
 class tubo {
     int x, altura, espacioTubos;
@@ -121,19 +126,20 @@ public:
     void borrar();
     void mover();
     bool chocar(class pajaro pajarito);
+    bool pasar( pajaro &pajarito);
 };
 void tubo::dibujar() {
     SetColor(2);
-    gotoxy(x, altura); printf("%c%c%c%c%c%c", 178, 178, 178, 178, 178, 178);
-    for (int w = 30; w > altura; w--) {
+    //gotoxy(x, altura); printf("%c%c%c%c%c%c", 178, 178, 178, 178, 178, 178);
+    for (int w = 30-2; w >= altura; w--) {
         //gotoxy(x,w); cout << "|****|";
         for (int i = x; i <= x + 5; i++)
         {
             gotoxy(i, w); printf("%c", 178);
         }
     }
-    gotoxy(x, altura - espacioTubos);printf( "%c%c%c%c%c%c", 178, 178, 178, 178, 178, 178);
-    for (int w = 0; w < altura-espacioTubos; w++) {
+    //gotoxy(x, altura - espacioTubos-1);printf( "%c%c%c%c%c%c", 178, 178, 178, 178, 178, 178);
+    for (int w = 1; w <= (altura-espacioTubos); w++) {
         //gotoxy(x, w); cout << "|****|";
         for (int i = x; i <= x + 5; i++)
         {
@@ -144,20 +150,18 @@ void tubo::dibujar() {
 }
 void tubo::borrar() {
     gotoxy(x, altura);     cout << "      ";
-    for (int w = 30; w > altura; w--) {
+    for (int w = 30 - 2; w > altura; w--) {
         gotoxy(x, w); cout << "      ";
     }
     gotoxy(x, altura - espacioTubos);     cout << "      ";
-    for (int w = 0; w < altura - espacioTubos; w++) {
+    for (int w = 1; w < (altura - espacioTubos); w++) {
         gotoxy(x, w); cout << "      ";
     }
 }
 void tubo::mover() {
-    
     borrar();
     x--;
     dibujar();
-    
 }
 
 bool tubo::chocar(class pajaro pajarito) {
@@ -166,11 +170,23 @@ bool tubo::chocar(class pajaro pajarito) {
     }
     return false;
 }
-
+bool tubo::pasar( pajaro &pajarito) {
+    if (pajarito.xpp() == x) {
+        return true;
+    }
+    return false;
+}
+void cancion() {
+    PlaySound(TEXT("ping.wav"), NULL, SND_FILENAME | SND_SYNC);
+}
 int main()
 {
+    //PlaySound(TEXT("ping.wav"), NULL, SND_FILENAME | SND_ASYNC);
+    //std::future<void> foo5 = std::async(std::launch::async, asd5);
+    thread music(cancion);
+
     eliminarCosito();
-    int x=0, y=0;
+    int x=0, y=0, puntaje=0;
     int espacioTubos = 10;
     bool juegoTerminado = false;
     pajaro pajarito(30,12);
@@ -185,6 +201,7 @@ int main()
     int contador = 0;
     while (!juegoTerminado)
     {
+        gotoxy(0, 0); cout << "Puntos: " << puntaje;
         contador++;
         for (itTubos=tubitos.begin(); itTubos != tubitos.end(); itTubos++)
         {
@@ -199,26 +216,31 @@ int main()
                 juegoTerminado = true;
                 system("cls");
             }
-            Sleep(30);
+            
+            if ((*itTubos)->pasar(pajarito)) {
+                puntaje++;
+            }
         }
+        
         for (itTubos = tubitos.begin(); itTubos != tubitos.end(); itTubos++)
         {
-            if ((*itTubos)->xpp() ==0) {
+            if ((*itTubos)->xpp() ==1) {
                 (*itTubos)->borrar();
                 delete(*itTubos);
                 itTubos = tubitos.erase(itTubos);
-                tubitos.push_back(new tubo(120, rand() % 20 + 15,15));
+                tubitos.push_back(new tubo(120, 15+(rand() % 12 ),15));
             }
         }
         if (contador==1)
         {
             contador = 0;
             pajarito.bajar();
-
         }
         pajarito.subir();
+        Sleep(40);
     }
-
+    music.join();
+    //foo5.get();
 
     return 0;
 }

@@ -1,0 +1,2 @@
+C:\Users\Usuario\Source\Repos\Alexander25470\flappy-bird-cpp\Debug\Flappy Bird c++.exe
+C:\Users\Usuario\Source\Repos\Alexander25470\flappy-bird-cpp\Debug\Flappy Bird c++.pdb
